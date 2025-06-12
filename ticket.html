@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ticket de caisse</title>
+    <style>
+      body {
+        font-family: 'Courier New', Courier, monospace;
+        width: 320px;
+        margin: 0 auto;
+        background: #fff;
+        color: #222;
+      }
+      .ticket {
+        padding: 18px 12px;
+        border: 1px dashed #888;
+        margin: 20px 0;
+      }
+      .flex-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .center {
+        text-align: center;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .mt {
+        margin-top: 12px;
+      }
+      .small {
+        font-size: 0.9em;
+      }
+      .tiny {
+        font-size: 0.8em;
+      }
+      hr {
+        border: none;
+        border-top: 1px dashed #888;
+        margin: 10px 0;
+      }
+      .total {
+        font-size: 1.2em;
+        font-weight: bold;
+        text-align: right;
+        margin-top: 10px;
+      }
+      .infos {
+        margin-bottom: 6px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+      th,
+      td {
+        font-size: 0.95em;
+        padding: 2px 0;
+        text-align: left;
+      }
+      th {
+        border-bottom: 1px dashed #888;
+      }
+      td:last-child,
+      th:last-child {
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticket">
+      <!-- En-tête du pressing -->
+      <div class="center bold" style="font-size: 1.1em">Pressing Demo</div>
+      <div class="center tiny infos">
+        123 rue de Paris, 75000 Paris<br />
+        Tél : 01 23 45 67 89<br />
+        SIRET : 123 456 789 00012
+      </div>
+      <hr />
+      <!-- Infos ticket -->
+      <div class="flex-between small">
+        <span>Ticket n° <span id="commande"></span></span>
+        <span id="date"></span>
+      </div>
+      <hr />
+      <!-- Détails commande -->
+      <div class="small">
+        <div><span class="bold">Client :</span> <span id="client"></span></div>
+        <div><span class="bold">Statut :</span> <span id="statut"></span></div>
+      </div>
+      <hr />
+      <!-- Tableau des articles -->
+      <table>
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Prix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chemise blanc</td>
+            <td>5,00 €</td>
+          </tr>
+          <tr>
+            <td>Pantalon</td>
+            <td>7,00 €</td>
+          </tr>
+          <tr>
+            <td>T-shirt</td>
+            <td>4,00 €</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Total -->
+      <div class="total">Total&nbsp;: <span id="total">16,00&nbsp;€</span></div>
+      <div class="center mt tiny">Merci pour votre confiance !</div>
+    </div>
+    <script>
+      // Récupère les paramètres passés dans l'URL
+      const params = new URLSearchParams(window.location.search)
+      document.getElementById('date').textContent = new Date().toLocaleString()
+      document.getElementById('commande').textContent = params.get('id') || ''
+      document.getElementById('client').textContent = params.get('client') || ''
+      document.getElementById('statut').textContent = params.get('statut') || ''
+
+      // Récupère les articles et prix
+      const articles = (params.get('articles') || '').split(',').filter(Boolean)
+      const prix = (params.get('prix') || '')
+        .split(',')
+        .map(p => parseFloat(p.replace(',', '.')))
+        .filter(p => !isNaN(p))
+
+      // Affiche les articles dans le tableau
+      let total = 0
+      const tbody = document.getElementById('articles-table')
+      articles.forEach((art, i) => {
+        const p = prix[i] !== undefined ? prix[i] : 0
+        total += p
+        const tr = document.createElement('tr')
+        tr.innerHTML = `<td>${art}</td><td>${p.toFixed(2)} €</td>`
+        tbody.appendChild(tr)
+      })
+      document.getElementById('total').textContent =
+        total.toFixed(2).replace('.', ',') + ' €'
+
+      // Impression automatique
+      window.onload = () => setTimeout(() => window.print(), 300)
+    </script>
+  </body>
+</html>

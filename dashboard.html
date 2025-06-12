@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tableau de bord</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script>
+      const { ipcRenderer } = require('electron')
+      function navigate(page) {
+        ipcRenderer.send('navigate', page)
+      }
+    </script>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside
+        class="w-56 bg-gray-800 text-gray-200 min-h-screen flex flex-col pt-8 fixed"
+      >
+        <div class="text-center mb-8">
+          <h2 class="text-xl font-bold text-white">
+            <i class="fa fa-tshirt mr-2"></i>Pressing
+          </h2>
+        </div>
+        <!-- Menu -->
+        <ul class="flex-1 space-y-2">
+          <li class="bg-gray-900 rounded-l-full">
+            <a
+              href="#"
+              onclick="navigate('dashboard')"
+              class="flex items-center px-6 py-3 font-semibold text-white"
+            >
+              <i class="fa fa-home mr-3"></i> Tableau de bord
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('tresorerie')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-wallet mr-3"></i> Trésorerie
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('clients')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-users mr-3"></i> Clients
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('commandes')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-shopping-basket mr-3"></i> Commandes
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('articles')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-tasks mr-3"></i> Articles
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('parametres')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-cogs mr-3"></i> Paramètres
+            </a>
+          </li>
+        </ul>
+      </aside>
+      <!-- Main content -->
+      <div class="flex-1 ml-56">
+        <!-- Header -->
+        <header
+          class="h-16 bg-blue-600 flex items-center px-8 shadow text-white fixed w-full z-10"
+          style="left: 14rem"
+        >
+          <span class="text-lg font-semibold"
+            >Tableau de bord - Gestion du Pressing</span
+          >
+        </header>
+        <!-- Content -->
+        <main class="pt-24 px-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-shopping-basket mr-2"></i> Commandes du jour
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">12</div>
+              <div class="text-gray-500 text-sm">
+                Commandes enregistrées aujourd'hui
+              </div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-users mr-2"></i> Clients
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">58</div>
+              <div class="text-gray-500 text-sm">Clients actifs</div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-check-circle mr-2"></i> Commandes livrées
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">8</div>
+              <div class="text-gray-500 text-sm">Livrées aujourd'hui</div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-money-bill-wave mr-2"></i> Commandes payées
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">7</div>
+              <div class="text-gray-500 text-sm">Payées aujourd'hui</div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-euro-sign mr-2"></i> Recettes du jour
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">245 €</div>
+              <div class="text-gray-500 text-sm">
+                Total encaissé aujourd'hui
+              </div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-calendar-alt mr-2"></i> Recettes du mois
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">3 200 €</div>
+              <div class="text-gray-500 text-sm">Total encaissé ce mois</div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-tshirt mr-2"></i> Articles traités
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">34</div>
+              <div class="text-gray-500 text-sm">
+                Articles lavés aujourd'hui
+              </div>
+            </div>
+            <div
+              class="bg-white rounded-lg shadow p-6 flex flex-col items-start"
+            >
+              <h3 class="text-blue-600 font-semibold mb-2 flex items-center">
+                <i class="fa fa-wallet mr-2"></i> Solde de caisse
+              </h3>
+              <div class="text-3xl font-bold text-gray-800 mb-1">1 200 €</div>
+              <div class="text-gray-500 text-sm">Disponible</div>
+            </div>
+          </div>
+          <!-- Tableau de suivi de trésorerie -->
+          <div class="mt-10 bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold text-blue-600 mb-4 flex items-center">
+              <i class="fa fa-wallet mr-2"></i> Suivi de la trésorerie
+            </h3>
+            <table class="min-w-full table-auto mb-4">
+              <thead>
+                <tr class="bg-gray-100 text-gray-700">
+                  <th class="px-4 py-2 text-left">Date</th>
+                  <th class="px-4 py-2 text-left">Type</th>
+                  <th class="px-4 py-2 text-left">Description</th>
+                  <th class="px-4 py-2 text-left">Montant</th>
+                  <th class="px-4 py-2 text-left">Solde</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-2">11/06/2025</td>
+                  <td class="px-4 py-2">Recette</td>
+                  <td class="px-4 py-2">Commande C001 payée</td>
+                  <td class="px-4 py-2 text-green-600">+25 €</td>
+                  <td class="px-4 py-2">1 200 €</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2">11/06/2025</td>
+                  <td class="px-4 py-2">Dépense</td>
+                  <td class="px-4 py-2">Achat lessive</td>
+                  <td class="px-4 py-2 text-red-600">-15 €</td>
+                  <td class="px-4 py-2">1 175 €</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2">10/06/2025</td>
+                  <td class="px-4 py-2">Recette</td>
+                  <td class="px-4 py-2">Commande C002 payée</td>
+                  <td class="px-4 py-2 text-green-600">+30 €</td>
+                  <td class="px-4 py-2">1 190 €</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="flex justify-end">
+              <button
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow flex items-center"
+              >
+                <i class="fa fa-wallet mr-2"></i> Voir la trésorerie détaillée
+              </button>
+            </div>
+          </div>
+          <div class="mt-8">
+            <button
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded shadow flex items-center text-lg font-semibold"
+              onclick="navigate('commandes')"
+            >
+              <i class="fa fa-plus mr-2"></i> Nouvelle Commande
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

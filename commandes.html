@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Commandes - Gestion Pressing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script>
+      const { ipcRenderer } = require('electron')
+      function navigate(page) {
+        ipcRenderer.send('navigate', page)
+      }
+      // Modal ajout
+      function openModal() {
+        document.getElementById('modal-commande').classList.remove('hidden')
+      }
+      function closeModal() {
+        document.getElementById('modal-commande').classList.add('hidden')
+      }
+      // Modal édition
+      function openEditModal(client, article, date, statut) {
+        document.getElementById('edit-client').value = client
+        document.getElementById('edit-article').value = article
+        document.getElementById('edit-date').value = date
+        document.getElementById('edit-statut').value = statut
+        document
+          .getElementById('modal-edit-commande')
+          .classList.remove('hidden')
+      }
+      function closeEditModal() {
+        document.getElementById('modal-edit-commande').classList.add('hidden')
+      }
+      // Modal suppression
+      let commandeToDelete = null
+      function openDeleteModal(id) {
+        commandeToDelete = id
+        document.getElementById('delete-commande-id').textContent = id
+        document
+          .getElementById('modal-delete-commande')
+          .classList.remove('hidden')
+      }
+      function closeDeleteModal() {
+        document.getElementById('modal-delete-commande').classList.add('hidden')
+        commandeToDelete = null
+      }
+      function confirmDeleteCommande() {
+        closeDeleteModal()
+        alert('Commande supprimée (simulation) : ' + commandeToDelete)
+      }
+      // Téléchargement CSV
+      function downloadCommandes() {
+        const rows = [
+          ['ID', 'Client', 'Article', 'Date', 'Statut'],
+          ['C001', 'Jean Dupont', 'Chemise', '2025-06-11', 'Prête'],
+          ['C002', 'Marie Martin', 'Pantalon', '2025-06-10', 'En cours']
+        ]
+        const csvContent = rows.map(e => e.join(';')).join('\n')
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'commandes.csv'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+      // Ouvre le ticket de caisse
+      function openTicket(id, client, article, statut) {
+        const url = `ticket.html?id=${encodeURIComponent(
+          id
+        )}&client=${encodeURIComponent(client)}&article=${encodeURIComponent(
+          article
+        )}&statut=${encodeURIComponent(statut)}`
+        window.open(url, '_blank', 'width=350,height=600')
+      }
+      window.addEventListener('DOMContentLoaded', () => {
+        document
+          .getElementById('form-commande')
+          .addEventListener('submit', function (e) {
+            e.preventDefault()
+            closeModal()
+            alert('Commande enregistrée (simulation)')
+          })
+        document
+          .getElementById('form-edit-commande')
+          .addEventListener('submit', function (e) {
+            e.preventDefault()
+            closeEditModal()
+            alert('Commande modifiée (simulation)')
+          })
+      })
+    </script>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside
+        class="w-56 bg-gray-800 text-gray-200 min-h-screen flex flex-col pt-8 fixed"
+      >
+        <div class="text-center mb-8">
+          <h2 class="text-xl font-bold text-white">
+            <i class="fa fa-tshirt mr-2"></i>Pressing
+          </h2>
+        </div>
+        <ul class="flex-1 space-y-2">
+          <li>
+            <a
+              href="#"
+              onclick="navigate('dashboard')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-home mr-3"></i> Tableau de bord
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('clients')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-users mr-3"></i> Clients
+            </a>
+          </li>
+          <li class="bg-gray-900 rounded-l-full">
+            <a
+              href="#"
+              onclick="navigate('commandes')"
+              class="flex items-center px-6 py-3 font-semibold text-white"
+            >
+              <i class="fa fa-shopping-basket mr-3"></i> Commandes
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('articles')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-tasks mr-3"></i> Articles
+            </a>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="navigate('parametres')"
+              class="flex items-center px-6 py-3 hover:bg-gray-700 rounded-l-full"
+            >
+              <i class="fa fa-cogs mr-3"></i> Paramètres
+            </a>
+          </li>
+        </ul>
+      </aside>
+      <!-- Main content -->
+      <div class="flex-1 ml-56">
+        <!-- Header -->
+        <header
+          class="h-16 bg-blue-600 flex items-center px-8 shadow text-white fixed w-full z-10"
+          style="left: 14rem"
+        >
+          <span class="text-lg font-semibold"
+            >Commandes - Gestion du Pressing</span
+          >
+        </header>
+        <!-- Content -->
+        <main class="pt-24 px-8">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-600 flex items-center">
+              <i class="fa fa-shopping-basket mr-2"></i> Liste des commandes
+            </h2>
+            <div class="flex">
+              <button
+                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow flex items-center mr-2"
+                onclick="downloadCommandes()"
+              >
+                <i class="fa fa-download mr-2"></i> Télécharger la liste
+              </button>
+              <button
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow flex items-center"
+                onclick="openModal()"
+              >
+                <i class="fa fa-plus mr-2"></i> Nouvelle commande
+              </button>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-6">
+            <table class="min-w-full table-auto">
+              <thead>
+                <tr class="bg-gray-100 text-gray-700">
+                  <th class="px-4 py-2 text-left">ID</th>
+                  <th class="px-4 py-2 text-left">Client</th>
+                  <th class="px-4 py-2 text-left">Article</th>
+                  <th class="px-4 py-2 text-left">Date</th>
+                  <th class="px-4 py-2 text-left">Statut</th>
+                  <th class="px-4 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b">
+                  <td class="px-4 py-2">C001</td>
+                  <td class="px-4 py-2">Jean Dupont</td>
+                  <td class="px-4 py-2">Chemise</td>
+                  <td class="px-4 py-2">2025-06-11</td>
+                  <td class="px-4 py-2">
+                    <span
+                      class="px-2 py-1 rounded bg-green-100 text-green-700 text-xs"
+                      >Prête</span
+                    >
+                  </td>
+                  <td class="px-4 py-2">
+                    <button
+                      class="text-blue-600 hover:underline mr-2"
+                      onclick="openEditModal('Jean Dupont','Chemise','2025-06-11','Prête')"
+                    >
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button
+                      class="text-red-600 hover:underline mr-2"
+                      onclick="openDeleteModal('C001')"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </button>
+                    <button
+                      class="text-green-600 hover:underline"
+                      onclick="openTicket('C001','Jean Dupont','Chemise','Prête')"
+                      title="Imprimer le ticket"
+                    >
+                      <i class="fa fa-receipt"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2">C002</td>
+                  <td class="px-4 py-2">Marie Martin</td>
+                  <td class="px-4 py-2">Pantalon</td>
+                  <td class="px-4 py-2">2025-06-10</td>
+                  <td class="px-4 py-2">
+                    <span
+                      class="px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs"
+                      >En cours</span
+                    >
+                  </td>
+                  <td class="px-4 py-2">
+                    <button
+                      class="text-blue-600 hover:underline mr-2"
+                      onclick="openEditModal('Marie Martin','Pantalon','2025-06-10','En cours')"
+                    >
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button
+                      class="text-red-600 hover:underline"
+                      onclick="openDeleteModal('C002')"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Pagination statique -->
+            <div class="flex justify-end mt-4 space-x-2">
+              <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">
+                1
+              </button>
+              <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">
+                2
+              </button>
+              <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">
+                3
+              </button>
+              <span class="px-3 py-1 text-gray-500">...</span>
+              <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">
+                Suivant
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <!-- Modal d'ajout de commande -->
+    <div
+      id="modal-commande"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-8 relative">
+        <button
+          onclick="closeModal()"
+          class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-xl font-bold mb-4 text-blue-600">Nouvelle commande</h3>
+        <form id="form-commande" class="space-y-4">
+          <div>
+            <label class="block text-gray-700 mb-1">Client</label>
+            <input
+              type="text"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-1">Article</label>
+            <input
+              type="text"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-1">Date</label>
+            <input
+              type="date"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-1">Statut</label>
+            <select class="w-full border rounded px-3 py-2" required>
+              <option value="En cours">En cours</option>
+              <option value="Prête">Prête</option>
+              <option value="Livrée">Livrée</option>
+            </select>
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              onclick="closeModal()"
+              class="mr-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Modal d'édition de commande -->
+    <div
+      id="modal-edit-commande"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-8 relative">
+        <button
+          onclick="closeEditModal()"
+          class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-xl font-bold mb-4 text-blue-600">
+          Modifier la commande
+        </h3>
+        <form id="form-edit-commande" class="space-y-4">
+          <div>
+            <label class="block text-gray-700 mb-1">Client</label>
+            <input
+              id="edit-client"
+              type="text"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-1">Article</label>
+            <input
+              id="edit-article"
+              type="text"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-1">Date</label>
+            <input
+              id="edit-date"
+              type="date"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700 mb-1">Statut</label>
+            <select
+              id="edit-statut"
+              class="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="En cours">En cours</option>
+              <option value="Prête">Prête</option>
+              <option value="Livrée">Livrée</option>
+            </select>
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              onclick="closeEditModal()"
+              class="mr-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Modal de suppression de commande -->
+    <div
+      id="modal-delete-commande"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-8 relative">
+        <button
+          onclick="closeDeleteModal()"
+          class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-xl font-bold mb-4 text-red-600">
+          Supprimer la commande
+        </h3>
+        <p class="mb-6">
+          Voulez-vous vraiment supprimer la commande
+          <span id="delete-commande-id" class="font-semibold"></span> ?
+        </p>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            onclick="closeDeleteModal()"
+            class="mr-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onclick="confirmDeleteCommande()"
+            class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
