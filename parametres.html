@@ -9,17 +9,118 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
     <script>
-      const { ipcRenderer } = require('electron')
+      async function changePassword(e) {
+        e.preventDefault()
+        const form = e.target
+        const inputs = form.querySelectorAll('input[type="password"]')
+        const password = inputs[0].value
+        const confirm = inputs[1].value
+
+        if (!password || !confirm) {
+          alert('Veuillez remplir les deux champs.')
+          return
+        }
+        if (password !== confirm) {
+          alert('Les mots de passe ne correspondent pas.')
+          return
+        }
+
+        // Appel à l’API pour changer le mot de passe
+        const result = await window.api.changePassword(password)
+        if (result && result.success) {
+          alert('Mot de passe modifié avec succès.')
+          form.reset()
+        } else {
+          alert(
+            result && result.error
+              ? result.error
+              : 'Erreur lors du changement de mot de passe.'
+          )
+        }
+      }
+
       function navigate(page) {
-        ipcRenderer.send('navigate', page)
+        window.api.navigate(page)
       }
       function saveSettings(e) {
         e.preventDefault()
         alert('Paramètres enregistrés (simulation)')
       }
-      function changePassword(e) {
+
+      // Affichage conditionnel pour l'admin
+      document.addEventListener('DOMContentLoaded', () => {
+        const role = localStorage.getItem('role')
+        if (role !== 'admin') {
+          document.getElementById('user-management').style.display = 'none'
+        } else {
+          loadUsers()
+        }
+      })
+
+      // Charger la liste des utilisateurs
+      async function loadUsers() {
+        const users = await window.api.getUsers()
+        const tbody = document.getElementById('usersTable')
+        tbody.innerHTML = ''
+        users.forEach(user => {
+          tbody.innerHTML += `
+        <tr>
+          <td class="px-2 py-1">${user.username}</td>
+          <td class="px-2 py-1">${user.role}</td>
+          <td class="px-2 py-1">
+            <button onclick="deleteUser('${user.username}')" class="text-red-600 mr-2">Supprimer</button>
+            <button onclick="showUpdateUser('${user.username}', '${user.role}')" class="text-blue-600">Modifier</button>
+          </td>
+        </tr>
+      `
+        })
+      }
+
+      // Ajouter un utilisateur
+      async function addUser(e) {
         e.preventDefault()
-        alert('Mot de passe modifié (simulation)')
+        const username = document.getElementById('newUsername').value
+        const password = document.getElementById('newPassword').value
+        const role = document.getElementById('newRole').value
+        const result = await window.api.addUser(username, password, role)
+        if (result.success) {
+          loadUsers()
+          e.target.reset()
+        } else {
+          alert(result.error)
+        }
+      }
+
+      // Supprimer un utilisateur
+      async function deleteUser(username) {
+        if (!confirm('Supprimer cet utilisateur ?')) return
+        const result = await window.api.deleteUser(username)
+        if (result.success) {
+          loadUsers()
+        } else {
+          alert(result.error)
+        }
+      }
+
+      // Afficher le formulaire de modification
+      function showUpdateUser(username, role) {
+        const newRole = prompt(
+          'Nouveau rôle pour ' + username + ' (admin/employe):',
+          role
+        )
+        if (newRole && (newRole === 'admin' || newRole === 'employe')) {
+          updateUser(username, newRole)
+        }
+      }
+
+      // Modifier le rôle d'un utilisateur
+      async function updateUser(username, role) {
+        const result = await window.api.updateUser(username, role)
+        if (result.success) {
+          loadUsers()
+        } else {
+          alert(result.error)
+        }
       }
     </script>
   </head>
@@ -181,6 +282,52 @@
           </div>
         </main>
       </div>
+      <!-- Operate user -->
+      <!-- Gestion des utilisateurs (visible uniquement pour l'admin) -->
+      <main class="pt-24 px-8">
+        <div id="user-management" class="mt-10 bg-white rounded-lg shadow p-8">
+          <h3 class="text-xl font-bold text-blue-600 mb-4 flex items-center">
+            <i class="fa fa-users-cog mr-2"></i> Gestion des utilisateurs
+          </h3>
+          <form
+            id="addUserForm"
+            class="flex gap-2 mb-4"
+            onsubmit="addUser(event)"
+          >
+            <input
+              type="text"
+              id="newUsername"
+              placeholder="Nom d'utilisateur"
+              class="border rounded px-2 py-1"
+              required
+            />
+            <input
+              type="password"
+              id="newPassword"
+              placeholder="Mot de passe"
+              class="border rounded px-2 py-1"
+              required
+            />
+            <select id="newRole" class="border rounded px-2 py-1">
+              <option value="employe">Employé</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button type="submit" class="bg-blue-600 text-white px-4 rounded">
+              Ajouter
+            </button>
+          </form>
+          <table class="min-w-full table-auto">
+            <thead>
+              <tr>
+                <th class="px-2 py-1">Nom</th>
+                <th class="px-2 py-1">Rôle</th>
+                <th class="px-2 py-1">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </main>
     </div>
   </body>
 </html>

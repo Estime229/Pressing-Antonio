@@ -9,9 +9,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
     <script>
-      const { ipcRenderer } = require('electron')
       function navigate(page) {
-        ipcRenderer.send('navigate', page)
+        window.api.navigate(page)
       }
       // Modal ajout
       function openModal() {
